@@ -23,15 +23,6 @@ class SliderPainter extends CustomPainter {
     //   }
     //
 
-    // var path = Path();
-    // path.moveTo(0, (-1 * size.height));
-    // path.quadraticBezierTo(size.width, (-1 * size.height), size.width, 0);
-    // path.quadraticBezierTo(
-    //     size.width * .7, size.height * .1, size.width, size.height);
-    //path.lineTo(size.width, size.height);
-
-    // canvas.drawPath(path, curvePaint);
-
     canvas.drawArc(
         Offset(-1 * CurvedSliderValues.rX, 0) &
             Size(CurvedSliderValues.rX * 2, CurvedSliderValues.rY * 2),
@@ -39,7 +30,7 @@ class SliderPainter extends CustomPainter {
         radians(90),
         false,
         curvePaint);
-    canvas.drawCircle(Offset(SliderValues.thumbX, SliderValues.thumbX),
+    canvas.drawCircle(Offset(SliderValues.thumbX, SliderValues.thumbY),
         SliderValues.thumbRadius, thumbPaint);
   }
 

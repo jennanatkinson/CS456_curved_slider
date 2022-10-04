@@ -36,7 +36,7 @@ class SliderValues extends Object {
   static double centerY = CurvedSliderValues.rY;
   static double sliderMin = 0.0;
   static double sliderMax = 0.0; //will be set by slider_painter
-  static const double thumbRadius = 25.0;
+  static const double thumbRadius = 15.0;
 
   static bool active = false;
   static Color activeColor = Colors.blue;
@@ -142,6 +142,9 @@ class _CurvedSliderState extends State<CurvedSlider> {
   void setThumbPosition(double positionX, double positionY) {
     CurvedSliderValues.theta = atan((positionY - SliderValues.centerY) /
         (positionX - SliderValues.centerX)); //in radians
+    if (CurvedSliderValues.theta > 0) {
+      CurvedSliderValues.theta = 0;
+    }
     double r = (CurvedSliderValues.rX * CurvedSliderValues.rY) /
         sqrt((pow(CurvedSliderValues.rX, 2) *
                 pow(sin(CurvedSliderValues.theta), 2)) +
@@ -150,18 +153,7 @@ class _CurvedSliderState extends State<CurvedSlider> {
     SliderValues.thumbX =
         (r * cos(CurvedSliderValues.theta)) + SliderValues.centerX;
     SliderValues.thumbY =
-        (-1 * r * sin(CurvedSliderValues.theta)) + SliderValues.centerY;
-    // if (SliderValues.thumbX < 0) {
-    //   SliderValues.thumbX = 0;
-    // } else if (SliderValues.thumbX > CurvedSliderValues.rX) {
-    //   SliderValues.thumbX = CurvedSliderValues.rX;
-    // }
-    // if (SliderValues.thumbY < 0) {
-    //   SliderValues.thumbY = 0;
-    // } else if (SliderValues.thumbY > CurvedSliderValues.rY) {
-    //   SliderValues.thumbY = CurvedSliderValues.rY;
-    // }
-    //print('setThumbPosition_SliderValues.thumbY: ${SliderValues.thumbY}');
+        (r * sin(CurvedSliderValues.theta)) + SliderValues.centerY;
   }
 
   //Checks if the thumb is active or if it should become active
