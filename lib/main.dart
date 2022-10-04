@@ -15,7 +15,13 @@ void main() {
         backgroundColor: Colors.grey,
       ),
       body: CurvedSliderWidget(
-          height: 500, width: 300, scaleMin: 0, scaleMax: 200),
+          backgroundColor: Colors.grey,
+          height: 500,
+          width: 300,
+          scaleMin: 0,
+          scaleMax: 200,
+          startAngle: radians(-90),
+          endAngle: radians(0)),
     ),
   ));
 }
@@ -27,6 +33,9 @@ class CurvedSliderValues extends Object {
   static double rY = 100;
   static double rX = 100;
   static double theta = radians(-90);
+
+  static double startAngle = radians(-90);
+  static double endAngle = radians(0);
 }
 
 /// Slider State with variables to be accessed within CurvedSliderState and Slider Painter
@@ -42,9 +51,25 @@ class SliderValues extends Object {
   static bool active = false;
   static Color activeColor = Colors.blue;
   static Color inactiveColor = Colors.black;
+  static Color backgroundColor = Colors.white;
 
   static Function activeCallback = (() {});
   static Function inactiveCallback = (() {});
+
+  static void setThumbPositionFromTheta() {
+    if (CurvedSliderValues.theta > CurvedSliderValues.endAngle) {
+      CurvedSliderValues.theta = CurvedSliderValues.endAngle;
+    }
+    double r = (CurvedSliderValues.rX * CurvedSliderValues.rY) /
+        sqrt((pow(CurvedSliderValues.rX, 2) *
+                pow(sin(CurvedSliderValues.theta), 2)) +
+            (pow(CurvedSliderValues.rY, 2) *
+                pow(cos(CurvedSliderValues.theta), 2)));
+    SliderValues.thumbX =
+        (r * cos(CurvedSliderValues.theta)) + SliderValues.centerX;
+    SliderValues.thumbY =
+        (r * sin(CurvedSliderValues.theta)) + SliderValues.centerY;
+  }
 }
 
 /// SliderTextWidget allows us to pass and set state between SliderWidget and Text
@@ -52,14 +77,23 @@ class CurvedSliderWidget extends StatefulWidget {
   //Constructor with required named parameter
   // ignore: use_key_in_widget_constructors
   CurvedSliderWidget(
-      {required double height,
+      {required Color backgroundColor,
+      required double height,
       required double width,
       required double scaleMin,
-      required double scaleMax}) {
+      required double scaleMax,
+      required double startAngle,
+      required double endAngle}) {
+    SliderValues.backgroundColor = backgroundColor;
     CurvedSliderValues.rY = height;
     CurvedSliderValues.rX = width;
     CurvedSliderValues.scaleMin = scaleMin;
     CurvedSliderValues.scaleMax = scaleMax;
+
+    CurvedSliderValues.startAngle = startAngle;
+    CurvedSliderValues.endAngle = endAngle;
+    CurvedSliderValues.theta = startAngle;
+    SliderValues.setThumbPositionFromTheta();
   }
   @override
   _CurvedSliderWidgetState createState() => _CurvedSliderWidgetState();
@@ -101,11 +135,11 @@ class _CurvedSliderWidgetState extends State<CurvedSliderWidget> {
           Container(
               height: CurvedSliderValues.rY,
               width: CurvedSliderValues.rX,
-              color: Colors.blue,
+              color: SliderValues.backgroundColor,
               child: CurvedSlider(
                 activeCallback: _setActive,
                 inactiveCallback: _setInactive,
-                activeColor: Colors.purple,
+                activeColor: SliderValues.activeColor,
               )),
           Padding(
               padding: const EdgeInsets.all(30.0),
@@ -147,23 +181,11 @@ class _CurvedSliderState extends State<CurvedSlider> {
     return dist <= SliderValues.thumbRadius * 5;
   }
 
-  void _setThumbPosition(double positionX, double positionY) {
+  void _setThumbPositionFromLocalPt(double positionX, double positionY) {
     CurvedSliderValues.theta = atan((positionY - SliderValues.centerY) /
         (positionX - SliderValues.centerX)); //in radians
-    print(
-        '_setThumbPosition.CurvedSliderValues.theta: ${degrees(CurvedSliderValues.theta)}');
-    if (CurvedSliderValues.theta > 0) {
-      CurvedSliderValues.theta = 0;
-    }
-    double r = (CurvedSliderValues.rX * CurvedSliderValues.rY) /
-        sqrt((pow(CurvedSliderValues.rX, 2) *
-                pow(sin(CurvedSliderValues.theta), 2)) +
-            (pow(CurvedSliderValues.rY, 2) *
-                pow(cos(CurvedSliderValues.theta), 2)));
-    SliderValues.thumbX =
-        (r * cos(CurvedSliderValues.theta)) + SliderValues.centerX;
-    SliderValues.thumbY =
-        (r * sin(CurvedSliderValues.theta)) + SliderValues.centerY;
+
+    SliderValues.setThumbPositionFromTheta();
   }
 
   //Checks if the thumb is active or if it should become active
@@ -171,12 +193,14 @@ class _CurvedSliderState extends State<CurvedSlider> {
     setState(() {
       if (SliderValues.active) {
         //this is a UX choice to continue moving even if the thumb is not on the slider
-        _setThumbPosition(details.localPosition.dx, details.localPosition.dy);
+        _setThumbPositionFromLocalPt(
+            details.localPosition.dx, details.localPosition.dy);
         SliderValues.activeCallback.call();
       } else if (_isClickOnThumb(
           details.localPosition.dx, details.localPosition.dy)) {
         SliderValues.active = true;
-        _setThumbPosition(details.localPosition.dx, details.localPosition.dy);
+        _setThumbPositionFromLocalPt(
+            details.localPosition.dx, details.localPosition.dy);
         SliderValues.activeCallback.call();
       }
     });

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math.dart' hide Colors;
 
 import 'main.dart';
 
@@ -12,26 +11,23 @@ class SliderPainter extends CustomPainter {
     curvePaint.style = PaintingStyle.stroke;
     curvePaint.strokeWidth = 4;
 
-    var fillCurvePaint = Paint();
-    fillCurvePaint.color = Colors.black;
-    fillCurvePaint.style = PaintingStyle.stroke;
-    fillCurvePaint.strokeWidth = 4;
-
     var thumbPaint = Paint();
     thumbPaint.color = Colors.purple;
     thumbPaint.style = PaintingStyle.fill;
 
     if (SliderValues.active) {
+      curvePaint.color = SliderValues.activeColor;
       thumbPaint.color = SliderValues.activeColor;
     } else {
+      curvePaint.color = SliderValues.inactiveColor;
       thumbPaint.color = SliderValues.inactiveColor;
     }
 
     canvas.drawArc(
         Offset(-1 * CurvedSliderValues.rX, 0) &
             Size(CurvedSliderValues.rX * 2, CurvedSliderValues.rY * 2),
-        radians(-90),
-        radians(90),
+        CurvedSliderValues.startAngle,
+        CurvedSliderValues.endAngle - CurvedSliderValues.startAngle,
         false,
         curvePaint);
     canvas.drawCircle(Offset(SliderValues.thumbX, SliderValues.thumbY),
