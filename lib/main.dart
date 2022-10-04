@@ -14,18 +14,19 @@ void main() {
         title: const Text('Working Slider'),
         backgroundColor: Colors.grey,
       ),
-      body: CurvedSliderWidget(height: 200, width: 300),
+      body: CurvedSliderWidget(
+          height: 500, width: 300, scaleMin: 0, scaleMax: 200),
     ),
   ));
 }
 
 /// Slider State with variables to be accessed within SliderTextWidgetState
 class CurvedSliderValues extends Object {
-  // static double scaleMin = 0;
-  // static double scaleMax = 400;
+  static double scaleMin = 0;
+  static double scaleMax = 90;
   static double rY = 100;
   static double rX = 100;
-  static double theta = radians(90);
+  static double theta = radians(-90);
 }
 
 /// Slider State with variables to be accessed within CurvedSliderState and Slider Painter
@@ -52,61 +53,68 @@ class CurvedSliderWidget extends StatefulWidget {
   // ignore: use_key_in_widget_constructors
   CurvedSliderWidget(
       {required double height,
-      required double width /*, required double xMin, required double xMax*/}) {
+      required double width,
+      required double scaleMin,
+      required double scaleMax}) {
     CurvedSliderValues.rY = height;
     CurvedSliderValues.rX = width;
-    // CurvedSliderValues.scaleMin = xMin;
-    // CurvedSliderValues.scaleMax = xMax;
+    CurvedSliderValues.scaleMin = scaleMin;
+    CurvedSliderValues.scaleMax = scaleMax;
   }
   @override
   _CurvedSliderWidgetState createState() => _CurvedSliderWidgetState();
 }
 
 class _CurvedSliderWidgetState extends State<CurvedSliderWidget> {
-  int xDisplay = SliderValues.thumbX.toInt();
+  int interpolatedValue = SliderValues.thumbX.toInt();
   Color textColor = SliderValues.inactiveColor;
+
+  void _calculateInterpolation() {
+    interpolatedValue = ((((SliderValues.thumbX - SliderValues.sliderMin) *
+                    (CurvedSliderValues.scaleMax -
+                        CurvedSliderValues.scaleMin)) /
+                (SliderValues.sliderMax - SliderValues.sliderMin)) +
+            CurvedSliderValues.scaleMin)
+        .toInt();
+  }
 
   //Sets new string for Text() to display and color when active
   void _setActive() {
     setState(() {
-      // xDisplay = ((((SliderValues.thumbX - SliderValues.sliderMin) *
-      //                 (CurvedSliderValues.scaleMax -
-      //                     CurvedSliderValues.scaleMin)) /
-      //             (SliderValues.sliderMax - SliderValues.sliderMin)) +
-      //         CurvedSliderValues.scaleMin)
-      //     .toInt();
-      // textColor = SliderValues.activeColor;
+      _calculateInterpolation();
+      textColor = SliderValues.activeColor;
     });
   }
 
   //Changes color to inactive and does not update x
   void _setInactive() {
     setState(() {
-      // textColor = SliderValues.inactiveColor;
+      textColor = SliderValues.inactiveColor;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.only(left: 500.0, top: 500.00),
-        child: Container(
-          height: CurvedSliderValues.rY,
-          width: CurvedSliderValues.rX,
-          color: Colors.blue,
-          child: CurvedSlider(
-            activeCallback: _setActive,
-            inactiveCallback: _setInactive,
-            activeColor: Colors.purple,
-          ),
-          // Padding(
-          //     padding: const EdgeInsets.all(30.0),
-          //     child: Text("X Value is $xDisplay",
-          //         style: TextStyle(
-          //             fontWeight: FontWeight.bold,
-          //             fontSize: 40,
-          //             color: textColor)))
-        ));
+        padding: EdgeInsets.all(100.0),
+        child: Column(children: [
+          Container(
+              height: CurvedSliderValues.rY,
+              width: CurvedSliderValues.rX,
+              color: Colors.blue,
+              child: CurvedSlider(
+                activeCallback: _setActive,
+                inactiveCallback: _setInactive,
+                activeColor: Colors.purple,
+              )),
+          Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Text("X Value is $interpolatedValue",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: textColor)))
+        ]));
   }
 }
 
@@ -139,9 +147,11 @@ class _CurvedSliderState extends State<CurvedSlider> {
     return dist <= SliderValues.thumbRadius * 5;
   }
 
-  void setThumbPosition(double positionX, double positionY) {
+  void _setThumbPosition(double positionX, double positionY) {
     CurvedSliderValues.theta = atan((positionY - SliderValues.centerY) /
         (positionX - SliderValues.centerX)); //in radians
+    print(
+        '_setThumbPosition.CurvedSliderValues.theta: ${degrees(CurvedSliderValues.theta)}');
     if (CurvedSliderValues.theta > 0) {
       CurvedSliderValues.theta = 0;
     }
@@ -161,12 +171,12 @@ class _CurvedSliderState extends State<CurvedSlider> {
     setState(() {
       if (SliderValues.active) {
         //this is a UX choice to continue moving even if the thumb is not on the slider
-        setThumbPosition(details.localPosition.dx, details.localPosition.dy);
+        _setThumbPosition(details.localPosition.dx, details.localPosition.dy);
         SliderValues.activeCallback.call();
       } else if (_isClickOnThumb(
           details.localPosition.dx, details.localPosition.dy)) {
         SliderValues.active = true;
-        setThumbPosition(details.localPosition.dx, details.localPosition.dy);
+        _setThumbPosition(details.localPosition.dx, details.localPosition.dy);
         SliderValues.activeCallback.call();
       }
     });

@@ -12,16 +12,20 @@ class SliderPainter extends CustomPainter {
     curvePaint.style = PaintingStyle.stroke;
     curvePaint.strokeWidth = 4;
 
+    var fillCurvePaint = Paint();
+    fillCurvePaint.color = Colors.black;
+    fillCurvePaint.style = PaintingStyle.stroke;
+    fillCurvePaint.strokeWidth = 4;
+
     var thumbPaint = Paint();
     thumbPaint.color = Colors.purple;
     thumbPaint.style = PaintingStyle.fill;
 
-    //   if (SliderValues.active) {
-    //     paint.color = SliderValues.activeColor;
-    //   } else {
-    //     paint.color = SliderValues.inactiveColor;
-    //   }
-    //
+    if (SliderValues.active) {
+      thumbPaint.color = SliderValues.activeColor;
+    } else {
+      thumbPaint.color = SliderValues.inactiveColor;
+    }
 
     canvas.drawArc(
         Offset(-1 * CurvedSliderValues.rX, 0) &
